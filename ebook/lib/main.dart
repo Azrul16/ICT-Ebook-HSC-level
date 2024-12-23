@@ -52,7 +52,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue, // Change to your desired background color
+      backgroundColor:
+          Colors.blue[300], // Change to your desired background color
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -61,18 +62,18 @@ class _SplashScreenState extends State<SplashScreen> {
               duration: Duration(seconds: 1),
               opacity: _opacity,
               child: Image.asset(
-                'assets/logo.png', // Replace with your logo path
-                height: 100,
+                'assets/ict_logo.png', // Replace with your logo path
+                height: 300,
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 0),
             AnimatedOpacity(
               duration: Duration(seconds: 1),
               opacity: _opacity,
               child: Text(
-                "Your App Name",
+                "তথ্য ও যোগাযোগ প্রযুক্তি",
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
