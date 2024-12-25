@@ -1,6 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:ebook/chapter4/lesson1.dart';
 
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primaryColor: Colors.green,
+        hintColor: Colors.lightGreen,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: AppBarTheme(
+          color: Colors.green,
+        ),
+        buttonTheme: ButtonThemeData(
+          buttonColor: Colors.green,
+          textTheme: ButtonTextTheme.primary,
+        ),
+      ),
+      home: HomeScreen(),
+    );
+  }
+}
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -9,10 +34,10 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Home Screen"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Theme.of(context).primaryColor,
       ),
       body: Container(
-        color: Colors.blue[50],
+        color: Colors.green[50],
         padding: const EdgeInsets.all(16.0),
         child: GridView(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -33,12 +58,11 @@ class HomeScreen extends StatelessWidget {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.blue[600],
+                  color: Colors.green[600],
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
-                      // ignore: deprecated_member_use
-                      color: Colors.blueAccent.withOpacity(0.5),
+                      color: Colors.greenAccent.withOpacity(0.5),
                       spreadRadius: 5,
                       blurRadius: 7,
                       offset: Offset(0, 3),
@@ -68,12 +92,11 @@ class HomeScreen extends StatelessWidget {
               onTap: () {},
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.blue[600],
+                  color: Colors.green[600],
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
-                      // ignore: deprecated_member_use
-                      color: Colors.blueAccent.withOpacity(0.5),
+                      color: Colors.greenAccent.withOpacity(0.5),
                       spreadRadius: 5,
                       blurRadius: 7,
                       offset: Offset(0, 3),
