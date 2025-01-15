@@ -14,7 +14,7 @@ class HtmlCompiler extends StatefulWidget {
 
 class _HtmlCompilerState extends State<HtmlCompiler> {
   final CodeController _codeController = CodeController(
-    text: "<!DOCTYPE html>",
+    text: "",
     language: xml,
   );
 
