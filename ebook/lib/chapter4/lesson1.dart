@@ -51,7 +51,7 @@ class _Lesson1State extends State<Lesson1> {
             CodeField(
               controller: CodeController(
                   text:
-                      "<!DOCTYPE html> \n<html> \m<body> \nHello World! \n</body>\n</html>"),
+                      "<!DOCTYPE html> \n<html> \n<body> \nHello World! \n</body>\n</html>"),
             ),
             HtmlCompiler(),
             SizedBox(

@@ -39,6 +39,7 @@ dependencies:
   html: ^0.15.5
   flutter_code_editor: ^0.3.2
   highlight: ^0.7.0
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
