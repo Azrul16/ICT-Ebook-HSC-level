@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ebook/chapter4/lesson1.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,15 +10,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.green,
-        hintColor: Colors.lightGreen,
+        primaryColor: Colors.purple,
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: AppBarTheme(
-          color: Colors.green,
-        ),
-        buttonTheme: ButtonThemeData(
-          buttonColor: Colors.green,
-          textTheme: ButtonTextTheme.primary,
+          color: Colors.purple,
         ),
       ),
       home: HomeScreen(),
@@ -32,98 +27,205 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Home Screen"),
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
-      body: Container(
-        color: Colors.green[50],
-        padding: const EdgeInsets.all(16.0),
-        child: GridView(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 1,
-            crossAxisSpacing: 30,
-            mainAxisSpacing: 30,
-            childAspectRatio: 1.25,
+      body: Stack(
+        children: [
+          // Gradient Background with Violet Theme
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF7E57C2), // Medium Violet
+                  Color(0xFF512DA8), // Deep Violet
+                  Color(0xFF311B92), // Indigo-like Deep Violet
+                ],
+              ),
+            ),
           ),
-          children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => Lesson1(),
+
+          // Top-left abstract circle
+          Positioned(
+            top: -70,
+            left: -50,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+
+          // Top-right abstract circle
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+
+          // Center-left abstract circle (Made larger)
+          Positioned(
+            top: MediaQuery.of(context).size.height / 2 - 50,
+            left: -90,
+            child: Container(
+              width: 320,
+              height: 320,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+
+          // Center-right abstract circle (Made larger)
+          Positioned(
+            top: MediaQuery.of(context).size.height / 2 - 300,
+            right: -90,
+            child: Container(
+              width: 280,
+              height: 280,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+
+          // Bottom-center abstract circle
+          Positioned(
+            bottom: -120,
+            left: MediaQuery.of(context).size.width / 2 -
+                130, // Center the circle
+            child: Container(
+              width: 260,
+              height: 260,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+
+          Column(
+            children: [
+              const SizedBox(height: 250),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  "Don't just learn, Learn smart.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                );
-                print("HTML Learning clicked");
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.green[600],
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.greenAccent.withOpacity(0.5),
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
                 ),
-                child: Center(
+              ),
+              // const SizedBox(height: 50),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.code, size: 50, color: Colors.white),
-                      SizedBox(height: 10),
-                      Text(
-                        "HTML Learning",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      // HTML Learning Button
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Lesson1(),
+                            ),
+                          );
+                          print("HTML Learning clicked");
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "HTML",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF7E57C2),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // C Programming Learning Button
+                      GestureDetector(
+                        onTap: () {
+                          print("C Programming Learning clicked");
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "C-programming",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF7E57C2),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.green[600],
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.greenAccent.withOpacity(0.5),
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: Offset(0, 3),
+              // Logo Section
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: Container(
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/ict_logo.png'), // Violet Logo
+                      fit: BoxFit.contain,
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.computer, size: 50, color: Colors.white),
-                      SizedBox(height: 10),
-                      Text(
-                        "C Programming Learning",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }

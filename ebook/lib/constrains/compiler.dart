@@ -31,8 +31,16 @@ class _HtmlCompilerState extends State<HtmlCompiler> {
           child: Column(
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                // mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  Text(
+                    "Try it yourself",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Spacer(),
                   IconButton(
                     icon: const Icon(Icons.play_arrow, color: Colors.green),
                     iconSize: 32.0, // Increase the size of the icon
@@ -71,34 +79,197 @@ class _HtmlCompilerState extends State<HtmlCompiler> {
   }
 }
 
-class HtmlPreview extends StatelessWidget {
+class HtmlPreview extends StatefulWidget {
   final String htmlContent;
-  const HtmlPreview({super.key, required this.htmlContent});
+
+  const HtmlPreview({Key? key, required this.htmlContent}) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
+  _HtmlPreviewState createState() => _HtmlPreviewState();
+}
+
+class _HtmlPreviewState extends State<HtmlPreview> {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+  String _currentUrl = '';
+  List<TabInfo> _tabs = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the first tab
+    _addNewTab(widget.htmlContent);
+  }
+
+  String _getAdjustedHtmlContent(String htmlContent) {
     final document = html_parser.parse(htmlContent);
-    final titleTag = document.head?.getElementsByTagName('title').first;
-    final titleContent = titleTag?.text ?? 'HTML Preview';
-    final adjustedHtmlContent =
-        ''' <!DOCTYPE html> <html> <head> <style> body { font-size: 200%; } </style> </head> <body> ${document.body?.innerHtml ?? ''} </body> </html> ''';
-    final controller = WebViewController()
-      ..loadRequest(Uri.dataFromString(
-        adjustedHtmlContent,
+
+    // Default to "New Tab" if <title> is not present
+    final title = document.getElementsByTagName('title').isNotEmpty
+        ? document.getElementsByTagName('title')[0].text
+        : "New Tab";
+
+    return '''
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body {
+              font-size: 20px; /* Larger font size */
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+        </head>
+        <body>
+          ${document.body?.innerHtml ?? ''}
+        </body>
+      </html>
+    ''';
+  }
+
+  void _addNewTab(String htmlContent) {
+    final document = html_parser.parse(htmlContent);
+
+    // Extract the title from the <title> tag or use "New Tab" as a fallback
+    final title = document.getElementsByTagName('title').isNotEmpty
+        ? document.getElementsByTagName('title')[0].text
+        : "New Tab";
+
+    final newTab = TabInfo(
+      title: title,
+      url: Uri.dataFromString(
+        _getAdjustedHtmlContent(htmlContent),
         mimeType: 'text/html',
         encoding: Encoding.getByName('utf-8'),
-      ));
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(titleContent.trim().isNotEmpty
-            ? titleContent.trim()
-            : 'HTML Preview'),
-      ),
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        child: WebViewWidget(
-          controller: controller,
+      ).toString(),
+    );
+
+    setState(() {
+      _tabs.add(newTab);
+    });
+    _initializeController(newTab);
+  }
+
+  void _initializeController(TabInfo tab) {
+    _controller = WebViewController()
+      ..setNavigationDelegate(NavigationDelegate(
+        onPageStarted: (_) {
+          setState(() {
+            _isLoading = true;
+          });
+        },
+        onPageFinished: (url) {
+          setState(() {
+            _isLoading = false;
+            tab.url = url;
+          });
+        },
+      ))
+      ..loadRequest(Uri.parse(tab.url));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: _tabs.length,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: TextEditingController(text: _currentUrl),
+                  onSubmitted: (url) {
+                    _controller.loadRequest(Uri.parse(url));
+                  },
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: "Enter URL",
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () => _addNewTab(widget.htmlContent),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  _controller.reload();
+                },
+              ),
+            ],
+          ),
+          bottom: TabBar(
+            isScrollable: true,
+            tabs: _tabs
+                .map((tab) => Tab(
+                      text: tab.title,
+                    ))
+                .toList(),
+            onTap: (index) {
+              setState(() {
+                _initializeController(_tabs[index]);
+              });
+            },
+          ),
+        ),
+        body: Stack(
+          children: [
+            WebViewWidget(controller: _controller),
+            if (_isLoading)
+              const Center(
+                child: CircularProgressIndicator(),
+              ),
+          ],
+        ),
+        bottomNavigationBar: BottomAppBar(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () async {
+                  if (await _controller.canGoBack()) {
+                    _controller.goBack();
+                  }
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.arrow_forward),
+                onPressed: () async {
+                  if (await _controller.canGoForward()) {
+                    _controller.goForward();
+                  }
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.home),
+                onPressed: () {
+                  _controller.loadRequest(Uri.dataFromString(
+                    _getAdjustedHtmlContent(widget.htmlContent),
+                    mimeType: 'text/html',
+                    encoding: Encoding.getByName('utf-8'),
+                  ));
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class TabInfo {
+  String title;
+  String url;
+
+  TabInfo({required this.title, required this.url});
 }

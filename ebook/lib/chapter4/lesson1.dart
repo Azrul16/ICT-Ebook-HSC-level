@@ -1,6 +1,7 @@
+import 'package:ebook/chapter4/lesson2.dart';
+import 'package:ebook/constrains/code_field.dart';
 import 'package:ebook/constrains/compiler.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_code_editor/flutter_code_editor.dart';
 
 class Lesson1 extends StatefulWidget {
   const Lesson1({super.key});
@@ -14,25 +15,42 @@ class _Lesson1State extends State<Lesson1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: SizedBox(
-          child: const Text(
-            "এইচটিএমএল-এর মৌলিক বিষয়সমূহ ",
-          ),
+        title: const Text(
+          "এইচটিএমএল-এর মৌলিক বিষয়সমূহ",
+          style: TextStyle(
+              color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 20),
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const Lesson2()));
+              // Define the action to perform when the button is pressed
+              print("Next button pressed");
+            },
+            child: const Text(
+              "Next →",
+              style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold // Set the text color to white
+                  ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'HTML উপাদান (HTML Element)',
-                style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue),
-              ),
-            ),
+            // Padding(
+            //   padding: EdgeInsets.all(16),
+            //   child: Text(
+            //     'HTML উপাদান (HTML Element)',
+            //     style: TextStyle(
+            //         fontSize: 32,
+            //         fontWeight: FontWeight.bold,
+            //         color: Colors.black),
+            //   ),
+            // ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
@@ -48,11 +66,16 @@ class _Lesson1State extends State<Lesson1> {
                 'ট্যাগ গঠিত হয় এলিমেন্টের নাম বা নামের অংশ দিয়ে। ওপেনিং ও ক্লোজিং ট্যাগের গঠন হয় এরকম, <element_name> ও < / element_name> | দুটি অ্যাঙ্গেল ব্র্যাকেটের ভেতরে এলিমেন্টের নাম লিখলে হয় ওপেনিং ট্যাগ, আর ক্লোজিং ট্যাগ হয় এ রকম, </...>। অর্থাৎ, এলিমেন্টের নামের আগে একটি অতিরিক্ত ফরওয়ার্ড স্ল্যাশ চিহ্ন (Forward Slash – 1) দেওয়া হয়। ওপেনিং এবং ক্লোজিং ট্যাগের ভেতরের লেখা এলিমেন্টের নাম একই হতে হবে। \nনিচে একটি HTML কোড দেখানো হলো। ',
               ),
             ),
-            CodeField(
-              controller: CodeController(
-                  text:
-                      "<!DOCTYPE html> \n<html> \n<body> \nHello World! \n</body>\n</html>"),
+            CodeFieldWithToggle(
+              text:
+                  "<!DOCTYPE html> \n<html> \n<body> \nHello World! \n</body>\n</html>",
             ),
+            // Padding(
+            //   padding: EdgeInsets.(16),
+            //   child: Text(
+            //     "Try your code here",
+            //   ),
+            // ),
             HtmlCompiler(),
             SizedBox(
               height: 20,
