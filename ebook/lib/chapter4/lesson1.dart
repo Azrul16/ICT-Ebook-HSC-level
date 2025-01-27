@@ -20,23 +20,6 @@ class _Lesson1State extends State<Lesson1> {
           style: TextStyle(
               color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 20),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const Lesson2()));
-              // Define the action to perform when the button is pressed
-              print("Next button pressed");
-            },
-            child: const Text(
-              "Next →",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold // Set the text color to white
-                  ),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -79,6 +62,35 @@ class _Lesson1State extends State<Lesson1> {
             HtmlCompiler(),
             SizedBox(
               height: 20,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Text("PREV"),
+                  ),
+                  Spacer(),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const Lesson2()));
+                      // Define the action to perform when the button is pressed
+                      print("Next button pressed");
+                    },
+                    child: Text(
+                      "NEXT",
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

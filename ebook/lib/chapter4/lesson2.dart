@@ -1,7 +1,6 @@
 import 'package:ebook/constrains/code_field.dart';
 import 'package:ebook/constrains/compiler.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_code_editor/flutter_code_editor.dart';
 
 class Lesson2 extends StatefulWidget {
   const Lesson2({super.key});
