@@ -52,6 +52,35 @@ class _Lesson1State extends State<Lesson2> {
             SizedBox(
               height: 20,
             ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Text("PREV"),
+                  ),
+                  Spacer(),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const Lesson2()));
+                      // Define the action to perform when the button is pressed
+                      print("Next button pressed");
+                    },
+                    child: Text(
+                      "NEXT",
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
