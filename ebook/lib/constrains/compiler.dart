@@ -82,9 +82,10 @@ class _HtmlCompilerState extends State<HtmlCompiler> {
 class HtmlPreview extends StatefulWidget {
   final String htmlContent;
 
-  const HtmlPreview({Key? key, required this.htmlContent}) : super(key: key);
+  const HtmlPreview({super.key, required this.htmlContent});
 
   @override
+  // ignore: library_private_types_in_public_api
   _HtmlPreviewState createState() => _HtmlPreviewState();
 }
 
@@ -132,8 +133,6 @@ class _HtmlPreviewState extends State<HtmlPreview> {
 
   void _addNewTab(String htmlContent) {
     final document = html_parser.parse(htmlContent);
-
-    // Extract the title from the <title> tag or use "New Tab" as a fallback
     final title = document.getElementsByTagName('title').isNotEmpty
         ? document.getElementsByTagName('title')[0].text
         : "New Tab";
