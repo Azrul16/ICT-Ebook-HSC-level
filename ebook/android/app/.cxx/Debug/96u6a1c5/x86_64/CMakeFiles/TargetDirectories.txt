@@ -1,0 +1,2 @@
+D:/Github/ICT-Ebook-HSC-level/ebook/android/app/.cxx/Debug/96u6a1c5/x86_64/CMakeFiles/edit_cache.dir
+D:/Github/ICT-Ebook-HSC-level/ebook/android/app/.cxx/Debug/96u6a1c5/x86_64/CMakeFiles/rebuild_cache.dir

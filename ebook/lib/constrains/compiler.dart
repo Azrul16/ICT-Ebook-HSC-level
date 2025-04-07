@@ -1,18 +1,19 @@
 import 'dart:convert';
+import 'package:ebook/constrains/error_detection.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:highlight/languages/xml.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 
-class HtmlCompiler extends StatefulWidget {
-  const HtmlCompiler({super.key});
+class HtmlCompilerTest extends StatefulWidget {
+  const HtmlCompilerTest({super.key});
 
   @override
-  State<HtmlCompiler> createState() => _HtmlCompilerState();
+  State<HtmlCompilerTest> createState() => _HtmlCompilerState();
 }
 
-class _HtmlCompilerState extends State<HtmlCompiler> {
+class _HtmlCompilerState extends State<HtmlCompilerTest> {
   final CodeController _codeController = CodeController(
     text: "",
     language: xml,
@@ -34,7 +35,7 @@ class _HtmlCompilerState extends State<HtmlCompiler> {
                 // mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    "Try it yourself",
+                    "নিজে চেষ্টা করুন",
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 16,
@@ -42,10 +43,28 @@ class _HtmlCompilerState extends State<HtmlCompiler> {
                   ),
                   Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.play_arrow, color: Colors.green),
+                    icon: const Icon(Icons.play_circle, color: Colors.green),
                     iconSize: 32.0, // Increase the size of the icon
                     onPressed: () {
-                      if (_codeController.text.isNotEmpty) {
+                      final error = detectHtmlErrors(_codeController.text);
+
+                      if (error != null) {
+                        // Show error dialog
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('ত্রুটি পাওয়া গেছে'),
+                            content: Text(error),
+                            actions: [
+                              TextButton(
+                                child: const Text('ঠিক আছে'),
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        // Navigate to preview
                         Navigator.push(
                           context,
                           MaterialPageRoute(

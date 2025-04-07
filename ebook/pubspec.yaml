@@ -41,6 +41,7 @@ dependencies:
   highlight: ^0.7.0
   google_fonts: ^6.2.1
   syntax_highlight: ^0.4.0
+  flutter_highlighter: ^0.1.1
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +81,16 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+fonts:
+    - family: NotoSansBengali
+      fonts:
+        - asset: assets/fonts/NotoSansBengali-Regular.ttf
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Regular.ttf
+    - family: SourceCodePro  # Added for HtmlCompiler
+      fonts:
+        - asset: assets/fonts/SourceCodePro-Regular.ttf
   # fonts:
   #   - family: Schyler
   #     fonts:
@@ -91,6 +102,6 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-  #
+  
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

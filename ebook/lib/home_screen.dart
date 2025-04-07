@@ -1,4 +1,4 @@
-import 'package:ebook/chapter4/lesson1.dart';
+import 'package:ebook/chapter4/home_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -143,7 +143,8 @@ class HomeScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => Lesson1(),
+                              builder: (context) =>
+                                  HomeScreen1(), // Navigate to HomeScreen1
                             ),
                           );
                           print("HTML Learning clicked");
