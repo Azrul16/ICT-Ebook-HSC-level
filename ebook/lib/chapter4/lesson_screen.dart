@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_highlighter/flutter_highlighter.dart';
 import 'package:flutter_highlighter/themes/atom-one-dark.dart';
 import 'data/lessons.dart';
-import 'html_compiler.dart';
 
 class LessonScreen extends StatefulWidget {
   final Lesson lesson;
@@ -16,11 +15,10 @@ class LessonScreen extends StatefulWidget {
 }
 
 class _LessonScreenState extends State<LessonScreen> {
-  final int lessonIndex =
-      lessons.indexOf(lessons.firstWhere((l) => l.title == lessons[0].title));
   @override
   Widget build(BuildContext context) {
-    int lessonIndex = lessons.indexOf(widget.lesson); // Correctly find index
+    int lessonIndex =
+        lessons.indexOf(widget.lesson); // Find the current lesson index
 
     return Scaffold(
       appBar: AppBar(
@@ -48,118 +46,127 @@ class _LessonScreenState extends State<LessonScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(20.0),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF5FAFF), Colors.white],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(15.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Text(
-                widget.lesson.content,
-                style: const TextStyle(
-                  fontSize: 16,
-                  height: 1.6,
-                  color: Colors.black87,
-                  fontFamily: 'NotoSansBengali',
-                ),
-              ),
-            ),
-            if (widget.lesson.code.isNotEmpty) ...[
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'কোড উদাহরণ:',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF87CEEB),
-                    ),
-                  ),
-                  Tooltip(
-                    message: 'কোড কপি করুন',
-                    child: IconButton(
-                      icon: const Icon(Icons.copy, color: Color(0xFF87CEEB)),
-                      onPressed: () {
-                        Clipboard.setData(
-                            ClipboardData(text: widget.lesson.code));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('কোড কপি করা হয়েছে!'),
-                            backgroundColor: Color(0xFF87CEEB),
+            // Iterate over all parts of the lesson
+            ...widget.lesson.parts.map((part) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Display content
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(20.0),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF5FAFF), Colors.white],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
-                        );
-                      },
+                        ],
+                      ),
+                      child: Text(
+                        part.content.trim(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.6,
+                          color: Colors.black87,
+                          fontFamily: 'NotoSansBengali',
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D2D2D),
-                  borderRadius: BorderRadius.circular(15.0),
-                  border:
-                      Border.all(color: const Color(0xFF87CEEB), width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
+                    // Display code if it exists
+                    if (part.code != null && part.code!.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'কোড উদাহরণ:',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF87CEEB),
+                            ),
+                          ),
+                          Tooltip(
+                            message: 'কোড কপি করুন',
+                            child: IconButton(
+                              icon: const Icon(Icons.copy,
+                                  color: Color(0xFF87CEEB)),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: part.code!));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('কোড কপি করা হয়েছে!'),
+                                    backgroundColor: Color(0xFF87CEEB),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D2D2D),
+                          borderRadius: BorderRadius.circular(15.0),
+                          border: Border.all(
+                              color: const Color(0xFF87CEEB), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: HighlightView(
+                          part.code!,
+                          language: 'html',
+                          theme: atomOneDarkTheme,
+                          padding: const EdgeInsets.all(12.0),
+                          textStyle: const TextStyle(
+                            fontFamily: 'JetBrainsMono',
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF87CEEB).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: const Text(
+                          'টিপ: কোডটি চালানোর জন্য একটি HTML এডিটর ব্যবহার করুন এবং ফলাফল দেখুন!',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF87CEEB),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      HtmlCompilerTest(),
+                    ],
+                    const SizedBox(height: 20),
                   ],
-                ),
-                child: HighlightView(
-                  widget.lesson.code,
-                  language: 'html',
-                  theme: atomOneDarkTheme,
-                  padding: const EdgeInsets.all(12.0),
-                  textStyle: const TextStyle(
-                    fontFamily: 'JetBrainsMono',
-                    fontSize: 14,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF87CEEB).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: const Text(
-                  'টিপ: কোডটি চালানোর জন্য একটি HTML এডিটর ব্যবহার করুন এবং ফলাফল দেখুন!',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF87CEEB),
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              HtmlCompilerTest(),
-            ],
+                )),
 
-            const SizedBox(height: 20),
             // Navigation Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -227,19 +234,6 @@ class _LessonScreenState extends State<LessonScreen> {
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       const SnackBar(
-      //         content: Text('বুকমার্ক যোগ করা হয়েছে!'),
-      //         backgroundColor: Color(0xFF87CEEB),
-      //       ),
-      //     );
-      //   },
-      //   backgroundColor: const Color(0xFF87CEEB),
-      //   child: const Icon(Icons.bookmark_border, color: Colors.white),
-      //   tooltip: 'বুকমার্ক করুন',
-      // ),
     );
   }
 }

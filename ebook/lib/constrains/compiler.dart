@@ -1,10 +1,76 @@
 import 'dart:convert';
-import 'package:ebook/constrains/error_detection.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:highlight/languages/xml.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
+
+String? detectHtmlErrors(String htmlContent) {
+  if (htmlContent.trim().isEmpty) {
+    return "এইচটিএমএল কনটেন্ট খালি।";
+  }
+
+  if (!htmlContent.contains(RegExp(r'<html[^>]*>', caseSensitive: false))) {
+    return "<html> ট্যাগ অনুপস্থিত।";
+  }
+  if (!htmlContent.contains(RegExp(r'<body[^>]*>', caseSensitive: false))) {
+    return "<body> ট্যাগ অনুপস্থিত।";
+  }
+
+  final selfClosingTags = <String>{
+    'area',
+    'base',
+    'br',
+    'col',
+    'embed',
+    'hr',
+    'img',
+    'input',
+    'link',
+    'meta',
+    'source',
+    'track',
+    'wbr',
+  };
+
+  final openTagRegex = RegExp(r'<([a-zA-Z][a-zA-Z0-9]*)[^>/]*?>');
+  final closeTagRegex = RegExp(r'</([a-zA-Z][a-zA-Z0-9]*)>');
+
+  final openTags = <String>[];
+  final closeTags = <String>[];
+
+  for (final match in openTagRegex.allMatches(htmlContent)) {
+    final tag = match.group(1)!.toLowerCase();
+    if (!selfClosingTags.contains(tag)) {
+      openTags.add(tag);
+    }
+  }
+
+  for (final match in closeTagRegex.allMatches(htmlContent)) {
+    closeTags.add(match.group(1)!.toLowerCase());
+  }
+
+  final tagCounts = <String, int>{};
+  for (var tag in openTags) {
+    tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+  }
+  for (var tag in closeTags) {
+    tagCounts[tag] = (tagCounts[tag] ?? 0) - 1;
+  }
+
+  for (var entry in tagCounts.entries) {
+    if (entry.value != 0) {
+      return "ট্যাগ <${entry.key}> অসম্পূর্ণ। খোলা এবং বন্ধ ট্যাগের সংখ্যা মেলে না।";
+    }
+  }
+
+  // final cleaned = htmlContent.replaceAll(RegExp(r'<[^>]+>'), '').trim();
+  // if (cleaned.isNotEmpty && !cleaned.contains(RegExp(r'[<>]'))) {
+  //   return "অপরিচিত টেক্সট পাওয়া গেছে: \"$cleaned\"।";
+  // }
+
+  return null;
+}
 
 class HtmlCompilerTest extends StatefulWidget {
   const HtmlCompilerTest({super.key});
@@ -27,29 +93,26 @@ class _HtmlCompilerState extends State<HtmlCompilerTest> {
         margin: const EdgeInsets.all(8.0),
         elevation: 5,
         child: Padding(
-          padding: const EdgeInsets.only(
-              left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
               Row(
-                // mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
+                  const Text(
                     "নিজে চেষ্টা করুন",
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 16,
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.play_circle, color: Colors.green),
-                    iconSize: 32.0, // Increase the size of the icon
+                    iconSize: 32.0,
                     onPressed: () {
                       final error = detectHtmlErrors(_codeController.text);
 
                       if (error != null) {
-                        // Show error dialog
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
@@ -64,12 +127,12 @@ class _HtmlCompilerState extends State<HtmlCompilerTest> {
                           ),
                         );
                       } else {
-                        // Navigate to preview
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                HtmlPreview(htmlContent: _codeController.text),
+                            builder: (context) => HtmlPreview(
+                              htmlContent: _codeController.text,
+                            ),
                           ),
                         );
                       }
@@ -104,7 +167,6 @@ class HtmlPreview extends StatefulWidget {
   const HtmlPreview({super.key, required this.htmlContent});
 
   @override
-  // ignore: library_private_types_in_public_api
   _HtmlPreviewState createState() => _HtmlPreviewState();
 }
 
@@ -117,26 +179,18 @@ class _HtmlPreviewState extends State<HtmlPreview> {
   @override
   void initState() {
     super.initState();
-
-    // Initialize the first tab
     _addNewTab(widget.htmlContent);
   }
 
   String _getAdjustedHtmlContent(String htmlContent) {
     final document = html_parser.parse(htmlContent);
-
-    // Default to "New Tab" if <title> is not present
-    final title = document.getElementsByTagName('title').isNotEmpty
-        ? document.getElementsByTagName('title')[0].text
-        : "New Tab";
-
     return '''
       <!DOCTYPE html>
       <html>
         <head>
           <style>
             body {
-              font-size: 20px; /* Larger font size */
+              font-size: 20px;
               font-family: Arial, sans-serif;
               margin: 0;
               padding: 0;
@@ -226,11 +280,7 @@ class _HtmlPreviewState extends State<HtmlPreview> {
           ),
           bottom: TabBar(
             isScrollable: true,
-            tabs: _tabs
-                .map((tab) => Tab(
-                      text: tab.title,
-                    ))
-                .toList(),
+            tabs: _tabs.map((tab) => Tab(text: tab.title)).toList(),
             onTap: (index) {
               setState(() {
                 _initializeController(_tabs[index]);
@@ -288,6 +338,5 @@ class _HtmlPreviewState extends State<HtmlPreview> {
 class TabInfo {
   String title;
   String url;
-
   TabInfo({required this.title, required this.url});
 }
