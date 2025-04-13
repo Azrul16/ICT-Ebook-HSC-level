@@ -1,3 +1,5 @@
+// import 'package:ebook/constrains/compiler.dart';
+import 'package:ebook/chapter4/html_compiler.dart';
 import 'package:ebook/constrains/compiler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -162,6 +164,7 @@ class _LessonScreenState extends State<LessonScreen> {
                       ),
                       const SizedBox(height: 20),
                       HtmlCompilerTest(),
+                      // HtmlCompilerWithTabs(),
                     ],
                     const SizedBox(height: 20),
                   ],

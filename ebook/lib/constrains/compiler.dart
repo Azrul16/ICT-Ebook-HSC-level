@@ -190,7 +190,7 @@ class _HtmlPreviewState extends State<HtmlPreview> {
         <head>
           <style>
             body {
-              font-size: 20px;
+              font-size: 60px;
               font-family: Arial, sans-serif;
               margin: 0;
               padding: 0;

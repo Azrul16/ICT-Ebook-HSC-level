@@ -1,354 +1,293 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_highlighter/flutter_highlighter.dart';
-import 'package:flutter_highlighter/themes/atom-one-dark.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:html/parser.dart' as html_parser;
+import 'package:highlight/languages/xml.dart';
+import 'package:flutter_code_editor/flutter_code_editor.dart';
 
-class HtmlCompiler extends StatefulWidget {
-  final String initialCode;
-  final TextEditingController _textController;
-
-  HtmlCompiler({super.key, this.initialCode = ""})
-      : _textController = TextEditingController(text: initialCode);
+class HtmlCompilerWithTabs extends StatefulWidget {
+  const HtmlCompilerWithTabs({super.key});
 
   @override
-  State<HtmlCompiler> createState() => _HtmlCompilerState();
+  State<HtmlCompilerWithTabs> createState() => _HtmlCompilerWithTabsState();
 }
 
-class _HtmlCompilerState extends State<HtmlCompiler> {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 400,
-      child: Card(
-        margin: const EdgeInsets.all(8.0),
-        elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        color: const Color(0xFFF5FAFF),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  const Text(
-                    "নিজে চেষ্টা করুন",
-                    style: TextStyle(
-                      color: Color(0xFF87CEEB),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'NotoSansBengali',
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.play_circle, color: Colors.green),
-                    iconSize: 32.0,
-                    tooltip: 'কোড চালান',
-                    onPressed: () {
-                      if (widget._textController.text.isNotEmpty) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HtmlPreview(
-                                htmlContent: widget._textController.text),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('কোড লিখুন প্রথমে!'),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.redAccent),
-                    iconSize: 32.0,
-                    tooltip: 'কোড মুছুন',
-                    onPressed: () {
-                      widget._textController.clear();
-                      setState(() {
-                        widget._textController.text = '';
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('কোড মুছে ফেলা হয়েছে!'),
-                          backgroundColor: Color(0xFF87CEEB),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2D2D2D),
-                    borderRadius: BorderRadius.circular(10),
-                    border:
-                        Border.all(color: const Color(0xFF87CEEB), width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: HighlightView(
-                            widget._textController.text.isEmpty
-                                ? '<!-- এখানে HTML কোড লিখুন -->'
-                                : widget._textController.text,
-                            language: 'html',
-                            theme: atomOneDarkTheme,
-                            textStyle: const TextStyle(
-                              fontFamily: 'JetBrainsMono',
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: TextField(
-                            controller: widget._textController,
-                            style: const TextStyle(
-                              fontFamily: 'JetBrainsMono',
-                              fontSize: 14,
-                              color: Colors.transparent,
-                            ),
-
-                            maxLines: null,
-                            minLines: 10, // Minimum lines to ensure visibility
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.all(12.0),
-                            ),
-                            onChanged: (value) {
-                              (context as Element)
-                                  .markNeedsBuild(); // Force rebuild
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class HtmlPreview extends StatefulWidget {
-  final String htmlContent;
-
-  const HtmlPreview({super.key, required this.htmlContent});
-
-  @override
-  // ignore: library_private_types_in_public_api
-  _HtmlPreviewState createState() => _HtmlPreviewState();
-}
-
-class _HtmlPreviewState extends State<HtmlPreview> {
-  late final WebViewController _controller;
-  bool _isLoading = true;
-  List<TabInfo> _tabs = [];
+class _HtmlCompilerWithTabsState extends State<HtmlCompilerWithTabs>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  late CodeController _codeController;
+  late WebViewController _webViewController;
+  String _htmlPreviewContent = "";
+  String? _lastError;
+  bool _isWebViewInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _addNewTab(widget.htmlContent);
+
+    _tabController = TabController(length: 2, vsync: this);
+    _codeController = CodeController(
+      text:
+          "<!DOCTYPE html>\n<html>\n<head>\n<title>পৃষ্ঠার শিরোনাম</title>\n</head>\n<body>\n<h1>হ্যালো বিশ্ব</h1>\n</body>\n</html>",
+      language: xml,
+    );
+
+    _initializeWebViewController();
+  }
+
+  Future<void> _initializeWebViewController() async {
+    _webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.white)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (String url) {
+            setState(() {
+              _isWebViewInitialized = true;
+            });
+          },
+        ),
+      );
+
+    await _compileAndPreview();
+  }
+
+  String? detectHtmlErrors(String htmlContent) {
+    if (htmlContent.trim().isEmpty) {
+      return "এইচটিএমএল কনটেন্ট খালি।";
+    }
+
+    if (!htmlContent.contains(RegExp(r'<html[^>]*>', caseSensitive: false))) {
+      return "<html> ট্যাগ অনুপস্থিত।";
+    }
+    if (!htmlContent.contains(RegExp(r'<body[^>]*>', caseSensitive: false))) {
+      return "<body> ট্যাগ অনুপস্থিত।";
+    }
+
+    final selfClosingTags = <String>{
+      'area',
+      'base',
+      'br',
+      'col',
+      'embed',
+      'hr',
+      'img',
+      'input',
+      'link',
+      'meta',
+      'source',
+      'track',
+      'wbr',
+    };
+
+    final openTagRegex = RegExp(r'<([a-zA-Z][a-zA-Z0-9]*)[^>/]*?>');
+    final closeTagRegex = RegExp(r'</([a-zA-Z][a-zA-Z0-9]*)>');
+
+    final openTags = <String>[];
+    final closeTags = <String>[];
+
+    for (final match in openTagRegex.allMatches(htmlContent)) {
+      final tag = match.group(1)!.toLowerCase();
+      if (!selfClosingTags.contains(tag)) openTags.add(tag);
+    }
+
+    for (final match in closeTagRegex.allMatches(htmlContent)) {
+      closeTags.add(match.group(1)!.toLowerCase());
+    }
+
+    final tagCounts = <String, int>{};
+    for (var tag in openTags) {
+      tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+    }
+    for (var tag in closeTags) {
+      tagCounts[tag] = (tagCounts[tag] ?? 0) - 1;
+    }
+
+    for (var entry in tagCounts.entries) {
+      if (entry.value != 0) {
+        return "ট্যাগ <${entry.key}> অসম্পূর্ণ। খোলা এবং বন্ধ ট্যাগের সংখ্যা মেলে না।";
+      }
+    }
+
+    return null;
+  }
+
+  Future<void> _compileAndPreview() async {
+    final error = detectHtmlErrors(_codeController.text);
+    setState(() {
+      _lastError = error;
+    });
+
+    if (error == null) {
+      final html = _getAdjustedHtmlContent(_codeController.text);
+      final previewUrl = Uri.dataFromString(
+        html,
+        mimeType: 'text/html',
+        encoding: Encoding.getByName('utf-8'),
+      ).toString();
+
+      setState(() {
+        _htmlPreviewContent = previewUrl;
+      });
+
+      if (_webViewController != null) {
+        await _webViewController.loadRequest(Uri.parse(previewUrl));
+      }
+    }
   }
 
   String _getAdjustedHtmlContent(String htmlContent) {
     final document = html_parser.parse(htmlContent);
-    final title = document.getElementsByTagName('title').isNotEmpty
-        ? document.getElementsByTagName('title')[0].text
-        : "নতুন ট্যাব";
-
     return '''
       <!DOCTYPE html>
       <html>
         <head>
-          <title>$title</title>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
             body {
-              font-size: 20px;
               font-family: Arial, sans-serif;
               margin: 20px;
-              padding: 0;
-              background-color: #FFFFFF;
+              line-height: 1.6;
+              font-size: 16px;
+            }
+            .error-message {
+              color: red;
+              padding: 20px;
+              border: 1px dashed red;
+              margin: 10px;
             }
           </style>
         </head>
         <body>
+          ${_lastError != null ? '<div class="error-message">$_lastError</div>' : ''}
           ${document.body?.innerHtml ?? ''}
         </body>
       </html>
     ''';
   }
 
-  void _addNewTab(String htmlContent) {
-    final document = html_parser.parse(htmlContent);
-    final title = document.getElementsByTagName('title').isNotEmpty
-        ? document.getElementsByTagName('title')[0].text
-        : "নতুন ট্যাব";
-
-    final newTab = TabInfo(
-      title: title,
-      url: Uri.dataFromString(
-        _getAdjustedHtmlContent(htmlContent),
-        mimeType: 'text/html',
-        encoding: Encoding.getByName('utf-8'),
-      ).toString(),
-    );
-
-    setState(() {
-      _tabs.add(newTab);
-    });
-    _initializeController(newTab);
-  }
-
-  void _initializeController(TabInfo tab) {
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageStarted: (_) {
-          setState(() {
-            _isLoading = true;
-          });
-        },
-        onPageFinished: (url) {
-          setState(() {
-            _isLoading = false;
-            tab.url = url;
-          });
-        },
-      ))
-      ..loadRequest(Uri.parse(tab.url));
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _codeController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: _tabs.length,
-      child: Scaffold(
-        appBar: AppBar(
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF87CEEB), Color(0xFFADD8E6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+    return Scaffold(
+      body: Column(
+        children: [
+          // Header with Tabs
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
               ),
             ),
-          ),
-          title: const Text(
-            'কোড প্রিভিউ',
-            style: TextStyle(
-              fontFamily: 'NotoSansBengali',
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          bottom: TabBar(
-            isScrollable: true,
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: _tabs
-                .map((tab) => Tab(
-                      text: tab.title,
-                    ))
-                .toList(),
-            onTap: (index) {
-              setState(() {
-                _initializeController(_tabs[index]);
-              });
-            },
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              tooltip: 'নতুন ট্যাব',
-              onPressed: () => _addNewTab(widget.htmlContent),
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: 'রিফ্রেশ',
-              onPressed: () => _controller.reload(),
-            ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            WebViewWidget(controller: _controller),
-            if (_isLoading)
-              const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF87CEEB)),
+            child: Column(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  labelColor: Colors.blue.shade800,
+                  unselectedLabelColor: Colors.grey,
+                  indicatorColor: Colors.blue.shade800,
+                  tabs: const [
+                    Tab(text: 'এডিটর'),
+                    Tab(text: 'আউটপুট'),
+                  ],
                 ),
-              ),
-          ],
-        ),
-        bottomNavigationBar: BottomAppBar(
-          color: const Color(0xFF87CEEB),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                tooltip: 'পিছনে',
-                onPressed: () async {
-                  if (await _controller.canGoBack()) {
-                    _controller.goBack();
-                  }
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.arrow_forward, color: Colors.white),
-                tooltip: 'সামনে',
-                onPressed: () async {
-                  if (await _controller.canGoForward()) {
-                    _controller.goForward();
-                  }
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.home, color: Colors.white),
-                tooltip: 'হোম',
-                onPressed: () {
-                  _controller.loadRequest(Uri.dataFromString(
-                    _getAdjustedHtmlContent(widget.htmlContent),
-                    mimeType: 'text/html',
-                    encoding: Encoding.getByName('utf-8'),
-                  ));
-                },
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+
+          // Tab Content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Editor Tab
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            "নিজে চেষ্টা করুন",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.play_circle,
+                                color: Colors.green),
+                            onPressed: _compileAndPreview,
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade400),
+                            borderRadius: BorderRadius.circular(4.0),
+                            color: Colors.black,
+                          ),
+                          child: CodeField(
+                            controller: _codeController,
+                            textStyle: const TextStyle(
+                              fontFamily: 'SourceCodePro',
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                            minLines: 10,
+                            maxLines: 20,
+                            onChanged: (_) => _compileAndPreview(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        '</>write your code here',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Output Tab
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: const BorderRadius.only(
+                      bottomRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: _isWebViewInitialized
+                      ? WebViewWidget(controller: _webViewController)
+                      : const Center(child: CircularProgressIndicator()),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class TabInfo {
-  String title;
-  String url;
-
-  TabInfo({required this.title, required this.url});
 }
