@@ -7,58 +7,65 @@ class HomeScreen1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Coding eBook',
-      theme: ThemeData(
-        primaryColor: const Color(0xFF87CEEB), // Light Sky Blue
-        scaffoldBackgroundColor: Colors.white,
-        textTheme: const TextTheme(
-          bodyLarge:
-              TextStyle(color: Colors.black87, fontFamily: 'NotoSansBengali'),
-          bodyMedium:
-              TextStyle(color: Colors.black87, fontFamily: 'NotoSansBengali'),
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF87CEEB),
-          foregroundColor: Colors.white,
-          elevation: 0,
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('কোডিং ইবুক'),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: const Color(0xFF87CEEB),
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('কোডিং ইবুক'),
-          centerTitle: true,
-        ),
-        body: ListView.builder(
-          padding: const EdgeInsets.all(16.0),
-          itemCount: lessons.length,
-          itemBuilder: (context, index) {
-            return Card(
-              color: const Color(0xFFF5FAFF), // Very light sky blue shade
-              elevation: 2,
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              child: ListTile(
-                title: Text(
-                  lessons[index].title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF87CEEB),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: lessons.length,
+        itemBuilder: (context, index) {
+          final lesson = lessons[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              splashColor: Colors.blue.withOpacity(0.2),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LessonScreen(lesson: lesson),
+                  ),
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5FAFF),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    )
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  title: Text(
+                    lesson.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF0096C7),
+                      fontFamily: 'NotoSansBengali',
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Color(0xFF0096C7),
+                    size: 20,
                   ),
                 ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          LessonScreen(lesson: lessons[index]),
-                    ),
-                  );
-                },
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
